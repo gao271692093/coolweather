@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.glg.coolweather.db.City;
 import com.glg.coolweather.db.County;
 import com.glg.coolweather.db.Province;
+import com.glg.coolweather.gson.Weather;
 import com.glg.coolweather.util.HttpUtil;
 import com.glg.coolweather.util.Utility;
 
@@ -110,10 +111,17 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 } else if(currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if(getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if(getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefreshLayout.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
                 }
             }
         });
@@ -185,7 +193,6 @@ public class ChooseAreaFragment extends Fragment {
             for(County county : countyList) {
                 dataList.add(county.getCountyName());
             }
-            dataList.remove(0);
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
